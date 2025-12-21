@@ -1,65 +1,125 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+
+export default function ApplyPage() {
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setStatus("submitting");
+
+    const form = e.currentTarget;
+
+    const payload = {
+      role: (form.elements.namedItem("role") as RadioNodeList).value,
+      business_name: (form.elements.namedItem("business_name") as HTMLInputElement).value,
+      phone: (form.elements.namedItem("phone") as HTMLInputElement).value,
+      email: (form.elements.namedItem("email") as HTMLInputElement).value,
+    };
+
+    const res = await fetch("/api/vendor-apply", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      setStatus("success");
+      form.reset();
+    } else {
+      setStatus("error");
+    }
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <>
+      {/* Brand top-left across whole page */}
+      <div className="brandTopLeft">Maqers.in</div>
+
+      <div className="split">
+        {/* Left purple panel */}
+        <div className="leftPanel">
+          <div className="leftContent">
+            <div className="illustrationBox">
+              {/* Put your downloaded image in /public as community.png */}
+              <img className="heroImage" src="/community.png" alt="Maqers community" />
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Right form panel */}
+        <div className="rightPanel">
+          <div className="card">
+            <h1 className="title">Registration</h1>
+            <p className="subtitle">Please fill out the form below to get started.</p>
+
+            <div className="formBox">
+              <form onSubmit={onSubmit}>
+                <div className="formRow">
+                  <div className="label">Are you a:</div>
+                  <div className="radioRow">
+                    <label className="radioOption">
+                      <input type="radio" name="role" value="seller" required />
+                      Seller
+                    </label>
+                    <label className="radioOption">
+                      <input type="radio" name="role" value="buyer" />
+                      Buyer
+                    </label>
+                    <label className="radioOption">
+                      <input type="radio" name="role" value="both" />
+                      Both
+                    </label>
+                  </div>
+                </div>
+
+                <div className="formRow">
+                  <label className="label">Name of the business</label>
+                  <input className="input" type="text" name="business_name" />
+                </div>
+
+                <div className="formRow">
+                  <label className="label">Phone number</label>
+                  <input className="input" type="text" name="phone" />
+                </div>
+
+                <div className="formRow">
+                  <label className="label">Email ID</label>
+                  <input className="input" type="email" name="email" required />
+                </div>
+
+                <button className="button" type="submit" disabled={status === "submitting"}>
+                  {status === "submitting" ? "Submitting..." : "SUBMIT"}
+                </button>
+              </form>
+
+              {status === "success" && (
+                <div className="successBox">
+                  Thank you for sharing you details! Kindly click on the link given below to join the Maqers community.
+                  <div style={{ marginTop: 8 }}>
+                    <a href="https://maqers.in" target="_blank" rel="noreferrer">
+                      Join the Maqers community
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {status === "error" && (
+                <div
+                  className="successBox"
+                  style={{ background: "rgba(255,0,0,0.06)", borderColor: "rgba(255,0,0,0.25)" }}
+                >
+                  Something went wrong. Please try again.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </main>
-    </div>
+      </div>
+
+      {/* Full-width footer across entire bottom */}
+      <div className="footerBar">© {new Date().getFullYear()} Maqers.in</div>
+    </>
   );
 }
