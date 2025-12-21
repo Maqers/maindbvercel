@@ -1,13 +1,58 @@
+// import { NextResponse } from "next/server";
+// import { createClient } from "@supabase/supabase-js";
+
+// const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+// const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
+
+// const supabase = createClient(supabaseUrl,supabaseKey);
+
+// export async function POST(req: Request) {
+//   try {
+//     const body = await req.json();
+
+//     const business_name = String(body?.business_name ?? "").trim();
+//     const email = String(body?.email ?? "").trim().toLowerCase();
+//     const role = String(body?.role ?? "").trim();
+//     const phone = String(body?.phone ?? "").trim();
+
+//     if (!email || !role) {
+//       return NextResponse.json({ error: "email and role are required" }, { status: 400 });
+//     }
+
+//     // This maps object keys -> table column names
+//     const { error } = await supabase
+//       .from("maindb_contactinfo")
+//       .insert([{ business_name, email, role, phone }]);
+
+//     if (error) {
+//       return NextResponse.json({ error: error.message }, { status: 500 });
+//     }
+
+//     return NextResponse.json({ ok: true });
+//   } catch {
+//     return NextResponse.json({ error: "invalid request" }, { status: 400 });
+//   }
+// }
+
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-
-const supabase = createClient(supabaseUrl,supabaseKey);
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      return NextResponse.json(
+        { error: "Supabase env vars missing on server" },
+        { status: 500 }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
     const body = await req.json();
 
     const business_name = String(body?.business_name ?? "").trim();
@@ -16,10 +61,12 @@ export async function POST(req: Request) {
     const phone = String(body?.phone ?? "").trim();
 
     if (!email || !role) {
-      return NextResponse.json({ error: "email and role are required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "email and role are required" },
+        { status: 400 }
+      );
     }
 
-    // This maps object keys -> table column names
     const { error } = await supabase
       .from("maindb_contactinfo")
       .insert([{ business_name, email, role, phone }]);
@@ -29,7 +76,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (e) {
     return NextResponse.json({ error: "invalid request" }, { status: 400 });
   }
 }
