@@ -71,40 +71,31 @@
               email: data.get("email"),
             };
           }
-          const res = await fetch("/api/vendor-apply", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-
-          const result = await res.json();
-
-          if (!res.ok) {
-            setErrorMsg(result.error || "Email Id. may already exist");
-            setStatus("duplicate");
-            return;
-          }
-
-          setStatus("success");
 
           try {
-            const res = await fetch("/api/vendor-apply", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            });
-      
-            if (!res.ok) throw new Error("Request failed");
-      
-            setStatus("success");
-            form.reset(); // ✅ now recognized
-          } catch (err) {
-            console.error(err);
-            setStatus("error");
-          }
-        }
-      
+    const res = await fetch("/api/vendor-apply", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
+    const result = await res.json();
+
+    if (!res.ok) {
+      setErrorMsg(result.error || "Email already exists");
+      setStatus("duplicate");
+      return;
+    }
+
+    setStatus("success");
+    form.reset();
+    setRole("");
+  } catch (err) {
+    console.error(err);
+    setErrorMsg("Something went wrong. Please try again.");
+    setStatus("error");
+  }
+}
     return (
       <>
         {/* Brand top-left across whole page */}
@@ -228,7 +219,6 @@
                     </div>
                   </div>
                 )}
-                
                 {status==="duplicate" && errorMsg && (
                 <div
                   className="successBox"
@@ -241,7 +231,6 @@
                   {errorMsg}
                 </div>
               )}
-
                 {status === "error" && (
                   <div
                     className="successBox"
