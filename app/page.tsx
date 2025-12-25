@@ -1,125 +1,262 @@
-"use client";
+  "use client";
+  /*
+  /*import { useState } from "react";
 
-import { useState } from "react";
+  export default function ApplyPage() {
+    const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
 
-export default function ApplyPage() {
-  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+    async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+      e.preventDefault();
+      setStatus("submitting");
+      const form = e.target;
+      const data = new FormData(form);
+    
+      const payload = {
+        role: data.get("role"),
+        business_name: data.get("business_name"),
+        phone: data.get("phone"),
+        email: data.get("email"),
+      };
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setStatus("submitting");
+      const res = await fetch("/api/vendor-apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    const form = e.currentTarget;
+      if (res.ok) {
+        setStatus("success");
+        form.reset();
+      } else {
+        setStatus("error");
+      }
+    }*/
+    import { useState } from "react";
 
-    const payload = {
-      role: (form.elements.namedItem("role") as RadioNodeList).value,
-      business_name: (form.elements.namedItem("business_name") as HTMLInputElement).value,
-      phone: (form.elements.namedItem("phone") as HTMLInputElement).value,
-      email: (form.elements.namedItem("email") as HTMLInputElement).value,
-    };
+    type Status = "idle" | "submitting" | "success" | "error" | "duplicate"; 
+    type Role = "seller" | "buyer" | "";
+    
 
-    const res = await fetch("/api/vendor-apply", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    export default function ApplyPage() {
+    const [status, setStatus] = useState<Status>("idle");
+    const [role, setRole] = useState<Role>("");
+    const [errorMsg, setErrorMsg] = useState("");
 
-    if (res.ok) {
-      setStatus("success");
-      form.reset();
-    } else {
-      setStatus("error");
-    }
-  }
+      
+        async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+          e.preventDefault();
+          setStatus("submitting");
+      
+          const form = e.currentTarget as HTMLFormElement;
+          const data = new FormData(form);
+      
+          const role = String(data.get("role") ?? "").trim();
+          const email = String(data.get("email") ?? "").trim().toLowerCase();
+          let payload: Record<string, any>;
+      
+          if (role === "seller") {
+            payload = {
+              role,
+              business_name: data.get("business_name"),
+              city: data.get("city"),
+              phone: data.get("phone"),
+              email: data.get("email"),
+            };
+          } else {
+            payload = {
+              role,
+              name: data.get("name"),
+              city: data.get("city"),
+              phone: data.get("phone"),
+              email: data.get("email"),
+            };
+          }
+          const res = await fetch("/api/vendor-apply", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
 
-  return (
-    <>
-      {/* Brand top-left across whole page */}
-      <div className="brandTopLeft">Maqers.in</div>
+          const result = await res.json();
 
-      <div className="split">
-        {/* Left purple panel */}
-        <div className="leftPanel">
-          <div className="leftContent">
-            <div className="illustrationBox">
-              {/* Put your downloaded image in /public as community.png */}
-              <img className="heroImage" src="/community.png" alt="Maqers community" />
+          if (!res.ok) {
+            setErrorMsg(result.error || "Email Id. may already exist");
+            setStatus("duplicate");
+            return;
+          }
+
+          setStatus("success");
+
+          try {
+            const res = await fetch("/api/vendor-apply", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+      
+            if (!res.ok) throw new Error("Request failed");
+      
+            setStatus("success");
+            form.reset(); // ✅ now recognized
+          } catch (err) {
+            console.error(err);
+            setStatus("error");
+          }
+        }
+      
+
+    return (
+      <>
+        {/* Brand top-left across whole page */}
+        <div className="brandTopLeft">Maqers.in</div>
+
+        <div className="split">
+          {/* Left purple panel */}
+          <div className="leftPanel">
+            <div className="leftContent">
+              <div className="illustrationBox">
+                {/* Put your downloaded image in /public as community.png */}
+                <img className="heroImage" src="/community.png" alt="Maqers community" />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Right form panel */}
-        <div className="rightPanel">
-          <div className="card">
-            <h1 className="title">Registration</h1>
-            <p className="subtitle">Please fill out the form below to get started.</p>
+          {/* Right form panel */}
+          <div className="rightPanel">
+            <div className="card">
+              <h1 className="title">Registration</h1>
+              <p className="subtitle">Please fill out the form below to get started.</p>
 
-            <div className="formBox">
-              <form onSubmit={onSubmit}>
-                <div className="formRow">
-                  <div className="label">Are you a:</div>
+              <div className="formBox">
+                <form onSubmit={onSubmit}>
+        {/* Role */}
+        <div className="formRow">
+          <div className="label">Are you a:</div>
                   <div className="radioRow">
-                    <label className="radioOption">
-                      <input type="radio" name="role" value="seller" required />
-                      Seller
-                    </label>
-                    <label className="radioOption">
-                      <input type="radio" name="role" value="buyer" />
-                      Buyer
-                    </label>
-                    <label className="radioOption">
-                      <input type="radio" name="role" value="both" />
-                      Both
-                    </label>
-                  </div>
-                </div>
+          <label>
+            <input
+              type="radio"
+              name="role"
+              value="seller"
+              checked={role === "seller"}
+              onChange={() => setRole("seller")}
+              required
+            />
+            Seller
+          </label>
 
-                <div className="formRow">
-                  <label className="label">Name of the business</label>
-                  <input className="input" type="text" name="business_name" />
-                </div>
-
-                <div className="formRow">
-                  <label className="label">Phone number</label>
-                  <input className="input" type="text" name="phone" />
-                </div>
-
-                <div className="formRow">
-                  <label className="label">Email ID</label>
-                  <input className="input" type="email" name="email" required />
-                </div>
-
-                <button className="button" type="submit" disabled={status === "submitting"}>
-                  {status === "submitting" ? "Submitting..." : "SUBMIT"}
-                </button>
-              </form>
-
-              {status === "success" && (
-                <div className="successBox">
-                  Thank you for sharing you details! Kindly click on the link given below to join the Maqers community.
-                  <div style={{ marginTop: 8 }}>
-                    <a href="https://maqers.in" target="_blank" rel="noreferrer">
-                      Join the Maqers community
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              {status === "error" && (
-                <div
-                  className="successBox"
-                  style={{ background: "rgba(255,0,0,0.06)", borderColor: "rgba(255,0,0,0.25)" }}
-                >
-                  Something went wrong. Please try again.
-                </div>
-              )}
-            </div>
-          </div>
+          <label>
+            <input
+              type="radio"
+              name="role"
+              value="buyer"
+              checked={role === "buyer"}
+              onChange={() => setRole("buyer")}
+            />
+            Buyer
+          </label>
         </div>
       </div>
 
-      {/* Full-width footer across entire bottom */}
-      <div className="footerBar">© {new Date().getFullYear()} Maqers.in</div>
-    </>
-  );
-}
+        {/* Seller fields */}
+        {role === "seller" && (
+          <div className="formRow">
+            <label className="label">Business Name</label>
+            <input className="input"type="text" name="business_name" placeholder="Enter business name" required />
+          </div>
+        )}
+
+        {/* Buyer fields */}
+        {role === "buyer" && (
+          <div className="formRow">
+            <label className="label">Name</label>
+            <input className="input" type="text" name="name" placeholder="Enter your full name" required />
+          </div>
+        )}
+
+        {/* Common fields */}
+        {role && (
+          <>
+            <div className="formRow">
+              <label className="label">City</label>
+               <select className="input" name="city" required>
+                  <option value="">Select city</option>
+                  <option value="Delhi">Delhi</option>
+                  <option value="Mumbai">Mumbai</option>
+                  <option value="Bengaluru">Bengaluru</option>
+                  <option value="Chennai">Chennai</option>
+                  <option value="Hyderabad">Hyderabad</option>
+                  <option value="Pune">Pune</option>
+                  <option value="Kolkata">Kolkata</option>
+                </select>
+            </div>
+
+            <div className="formRow">
+              <label className="label">Phone Number</label>
+                <input
+                  className="input"
+                  type="tel"
+                  name="phone"
+                  required
+                  pattern="[0-9]{10}"
+                  maxLength={10}
+                  inputMode="numeric"
+                  placeholder="10-digit phone number"
+                />
+            </div>
+
+            <div className="formRow">
+              <label className="label">Email</label>
+              <input className="input" type="email" name="email" placeholder="Enter the email address" required />
+            </div>
+          </>
+        )}
+
+        <button className="button" type="submit" disabled={status === "submitting" || !role}>
+          {status === "submitting" ? "Submitting..." : "Submit"}
+        </button>
+      </form>
+    
+
+                {status === "success" && (
+                  <div className="successBox">
+                    Thank you for sharing you details! Kindly click on the link given below to join the Maqers community.
+                    <div style={{ marginTop: 8 }}>
+                      <a href="https://maqers.in" target="_blank" rel="noreferrer">
+                        Join the Maqers community
+                      </a>
+                    </div>
+                  </div>
+                )}
+                
+                {status==="duplicate" && errorMsg && (
+                <div
+                  className="successBox"
+                  style={{
+                    background: "rgba(255,0,0,0.06)",
+                    borderColor: "rgba(255,0,0,0.25)",
+                    color: "#a40000",
+                  }}
+                >
+                  {errorMsg}
+                </div>
+              )}
+
+                {status === "error" && (
+                  <div
+                    className="successBox"
+                    style={{ background: "rgba(255,0,0,0.06)", borderColor: "rgba(255,0,0,0.25)" }}
+                  >
+                    Something went wrong. Please try again.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Full-width footer across entire bottom */}
+        <div className="footerBar">© {new Date().getFullYear()} Maqers.in</div>
+      </>
+    );
+  }
