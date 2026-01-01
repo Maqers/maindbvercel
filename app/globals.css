@@ -7,13 +7,20 @@ html, body {
   color: #111;
 }
 
+.title{
+  font-family: Garamond, "EB Garamond", "Cormorant Garamond", serif;
+  font-weight: 700;
+  font-size: 34px;
+  margin: 0 0 10px 0;
+} 
+
 /* Use a clean system font for the brand only */
 .brandTopLeft {
   position: fixed;
   top: 18px;
   left: 24px;
   z-index: 50;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: "Garamond", "EB Garamond", "Cormorant Garamond", serif;
   font-weight: 800;
   font-size: 22px;
   color: #ffffff;           /* white */
@@ -26,12 +33,13 @@ html, body {
 .split {
   min-height: 100vh;
   display: flex;
+  padding-bottom: 42px;
 }
 
 /* Left purple panel */
 .leftPanel {
   flex: 1;
-  background: #8f6cf2; /* purple */
+  background: #760909; /* purple */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -43,16 +51,23 @@ html, body {
   color: white;
 }
 
-.brand {
+/*.brand {
   font-weight: 700;
   font-size: 22px;
   margin-bottom: 28px;
-}
+}*/
 
 .illustrationBox {
-  border-radius: 16px;
-  background: rgba(255,255,255,0.10);
-  padding: 18px;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.heroImage {
+  width: 100%;
+  height: auto;
+  border-radius: 0;
+  display: block;
 }
 
 /* Right panel (form) */
@@ -111,7 +126,7 @@ html, body {
 }
 
 .input:focus {
-  border-color: #8f6cf2;
+  border-color: var(--brand-purple-focus);
   box-shadow: 0 0 0 4px rgba(143,108,242,0.15);
 }
 
@@ -185,9 +200,9 @@ html, body {
 
 
 /* Make room so fixed footer doesn't overlap */
-.split {
+/* .brandTopLeft {
   padding-bottom: 42px;
-}
+} */
 
 /* Full-width footer pinned to bottom */
 .footerBar {
@@ -205,24 +220,4 @@ html, body {
   border-top: 1px solid rgba(0,0,0,0.08);
   color: #333;
   z-index: 40;
-}
-
-/* Image in left panel */
-
-.leftContent {
-  width: min(520px, 100%);
-  color: white;
-}
-
-.illustrationBox {
-  border-radius: 18px;
-  background: rgba(255,255,255,0.12);
-  padding: 18px;
-}
-
-.heroImage {
-  width: 100%;
-  height: auto;
-  border-radius: 14px;
-  display: block;
 }
