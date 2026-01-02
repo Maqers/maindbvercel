@@ -67,7 +67,7 @@ export default function ApplyPage() {
 
   return (
     <div>
-      <div className="brandTopLeft">Maqers.in</div>
+      <div className="brandTopLeft"></div>
 
       <div className="split">
         <div className="leftPanel">
