@@ -44,59 +44,63 @@
     const [submittedRole, setSubmittedRole] = useState<Role>("");
 
       
-        async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-          e.preventDefault();
-          setStatus("submitting");
-      
-          const form = e.currentTarget as HTMLFormElement;
-          const data = new FormData(form);
-      
-          const role = String(data.get("role") ?? "").trim();
-          const email = String(data.get("email") ?? "").trim().toLowerCase();
-          let payload: Record<string, any>;
-          
-          if (role === "seller") {
-            payload = {
-              role,
-              business_name: data.get("business_name"),
-              city: data.get("city"),
-              phone: data.get("phone"),
-              email: data.get("email"),
-            };
-          } else {
-            payload = {
-              role,
-              name: data.get("name"),
-              city: data.get("city"),
-              phone: data.get("phone"),
-              email: data.get("email"),
-            };
-          }
-          setSubmittedRole(role);   // ✅ remember submitted role
-          try {
-    const res = await fetch("/api/vendor-apply", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setStatus("submitting");
 
-    const result = await res.json();
+    const form = e.currentTarget;
+    const data = new FormData(form);
 
-    if (!res.ok) {
-      setErrorMsg(result.error || "Email already exists");
-      setStatus("duplicate");
-      return;
+    const submittedRole = String(data.get("role") ?? "").trim() as Role;
+    const email = String(data.get("email") ?? "").trim().toLowerCase();
+
+    let payload: Record<string, any>;
+
+    if (submittedRole === "seller") {
+      payload = {
+        role: submittedRole,
+        business_name: data.get("business_name"),
+        city: data.get("city"),
+        phone: data.get("phone"),
+        email,
+      };
+    } else {
+      payload = {
+        role: submittedRole,
+        name: data.get("name"),
+        city: data.get("city"),
+        phone: data.get("phone"),
+        email,
+      };
     }
 
-    setStatus("success");
-    form.reset();
-    setRole("");    
-  } catch (err) {
-    console.error(err);
-    setErrorMsg("Something went wrong. Please try again.");
-    setStatus("error");
+    try {
+      const res = await fetch("/api/vendor-apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(result.error || "Email already exists");
+        setStatus("duplicate");
+        return;
+      }
+
+      // ✅ remember submitted role BEFORE reset
+      setSubmittedRole(submittedRole);
+      setStatus("success");
+
+      form.reset();
+      setRole(""); // safe now
+    } catch (err) {
+      console.error(err);
+      setErrorMsg("Something went wrong. Please try again.");
+      setStatus("error");
+    }
   }
-}
     return (
       <>
         {/* Brand top-left across whole page */}
@@ -207,7 +211,7 @@
         <button className="button" type="submit" disabled={status === "submitting" || !role}>
           {status === "submitting" ? "Submitting..." : "Submit"}
         </button>
-      </form>
+      
     
 
                 {status === "success" && submittedRole === "buyer" && (
@@ -226,7 +230,7 @@
     Thank you for submitting! We’ll reach out to you soon.
   </div>
 )}
-
+</form>
                 {status==="duplicate" && errorMsg && (
                 <div
                   className="successBox"
