@@ -41,6 +41,7 @@
     const [status, setStatus] = useState<Status>("idle");
     const [role, setRole] = useState<Role>("");
     const [errorMsg, setErrorMsg] = useState("");
+    const [submittedRole, setSubmittedRole] = useState<Role>("");
 
       
         async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -53,7 +54,7 @@
           const role = String(data.get("role") ?? "").trim();
           const email = String(data.get("email") ?? "").trim().toLowerCase();
           let payload: Record<string, any>;
-      
+          
           if (role === "seller") {
             payload = {
               role,
@@ -71,7 +72,7 @@
               email: data.get("email"),
             };
           }
-
+          setSubmittedRole(role);   // ✅ remember submitted role
           try {
     const res = await fetch("/api/vendor-apply", {
       method: "POST",
@@ -89,7 +90,7 @@
 
     setStatus("success");
     form.reset();
-    setRole("");
+    setRole("");    
   } catch (err) {
     console.error(err);
     setErrorMsg("Something went wrong. Please try again.");
@@ -99,7 +100,7 @@
     return (
       <>
         {/* Brand top-left across whole page */}
-        <div className="brandTopLeft">Maqers.in</div>
+        <div className="brandTopLeft"></div>
 
         <div className="split">
           {/* Left purple panel */}
@@ -209,16 +210,23 @@
       </form>
     
 
-                {status === "success" && (
-                  <div className="successBox">
-                    Thank you for sharing you details! Kindly click on the link given below to join the Maqers community.
-                    <div style={{ marginTop: 8 }}>
-                      <a href="https://maqers.in" target="_blank" rel="noreferrer">
-                        Join the Maqers community
-                      </a>
-                    </div>
-                  </div>
-                )}
+                {status === "success" && submittedRole === "buyer" && (
+  <div className="successBox">
+    Thank you for sharing your details! Kindly click on the link below to join the Maqers community.
+    <div style={{ marginTop: 8 }}>
+      <a href="https://maqers.in" target="_blank" rel="noreferrer">
+        Join the Maqers community
+      </a>
+    </div>
+  </div>
+)}
+
+{status === "success" && submittedRole === "seller" && (
+  <div className="successBox">
+    Thank you for submitting! We’ll reach out to you soon.
+  </div>
+)}
+
                 {status==="duplicate" && errorMsg && (
                 <div
                   className="successBox"
